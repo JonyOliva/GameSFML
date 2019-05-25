@@ -18,6 +18,7 @@ class Enemy: public BasicStructure{
         Animation* anim;
         float daniado;
     public:
+        virtual void Update(const float, Player*, Map*);
         int tipo;
         sf::Sprite getSpr();
         void drawEnemy(sf::RenderWindow *);
@@ -31,15 +32,14 @@ class Enemy: public BasicStructure{
 };
 
 class EnemyTipoA: public Enemy{
-    private:
-        int getNextStep(Map* mapa, sf::Vector2u pos, sf::Vector2u j);
     public:
-        EnemyTipoA(int, int, int);
+        EnemyTipoA(int, int);
         void Update(const float, Player*, Map*);
 };
 
 class EnemyTipoB: public Enemy{
     public:
+        Bullet* bala;
         EnemyTipoB(int, int);
         void Update(const float, Player*, Map*);
 };

@@ -67,7 +67,7 @@ void Player::playerUpdate(Map *mapa, const std::vector<int> &activeWalls, const 
     shootTime+=Time;
     timeFr += Time;
     float angulo = Global::getAngulo(sprPlayer.getPosition());
-    sf::Vector2f aim = Global::aimDirNorm(sprPlayer.getPosition(), sf::Vector2f(sf::Mouse::getPosition(*Global::currentWindow)));
+    sf::Vector2f aim = Global::aimDirNorm(sprPlayer.getPosition(), sf::Mouse::getPosition(*Global::currentWindow));
 
     if(vida>0 && playerState!=-1){
         disparo = arma->disparo;

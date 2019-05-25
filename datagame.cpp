@@ -20,12 +20,12 @@ sf::Vector2u Global::diffTo(sf::Vector2u startPos, sf::Vector2u endPos){
     return diff;
 }
 
-sf::Vector2f Global::aimDirNorm(sf::Vector2f Pos, sf::Vector2f target){
-    sf::Vector2f aimDir = target - Pos;
-    //aimDir.x -= Pos.x;
-    aimDir.x -= Global::currentWindow->getSize().x/2;
-    //aimDir.y -= Pos.y;
-    aimDir.y -= Global::currentWindow->getSize().y/2;
+sf::Vector2f Global::aimDirNorm(sf::Vector2f Pos, sf::Vector2i target){
+    sf::Vector2f aimDir = sf::Vector2f(target); //- Pos
+    //aimDir.x -= Global::currentWindow->getSize().x/2;
+    //aimDir.y -= Global::currentWindow->getSize().y/2;
+    aimDir.x -= Global::currentWindow->mapCoordsToPixel(Pos).x;
+    aimDir.y -= Global::currentWindow->mapCoordsToPixel(Pos).y;
     sf::Vector2f aimDirNorm = aimDir / (static_cast<float>(sqrt(pow(aimDir.x, 2)+pow(aimDir.y, 2))));
 
     return aimDirNorm;

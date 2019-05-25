@@ -6,53 +6,16 @@ mov x pixel(mov)
 veces = 64/mov
 tiempo de movimiento = 1/60 * veces
 
+DISPARO DEL ENEMIGO
+
+bala = new Bullet(Global::aimDirNorm(spr.getPosition(), Global::currentWindow->mapCoordsToPixel(jg->getPayerSpr().getPosition())), 30);
+bala->setPosition(spr.getPosition());
+
+Global::currentWindow->draw(bala->getSpr());
+Global::currentWindow->display();
+bala->mover();
+
 */
-int EnemyTipoA::getNextStep(Map* mapa, sf::Vector2u pos, sf::Vector2u p){
-    std::vector<Tile> tiles;
-    int i, t, x, y;
-    for(i=-1;i<2;i++){
-        for(t=-1;t<2;t++){
-            if(i == 0 && t == 0)
-                continue;
-            y = pos.y+i;
-            x = pos.x+t;
-            Tile current = mapa->getTileInGrid(grid, sf::Vector2u(x, y));
-            if(current.tipo == 1)
-                tiles.push_back(current);
-        }
-    }
-    Tile min = tiles[0];
-    int minDelta = abs(int(p.y-tiles[0].position.y))+abs(int(p.x-tiles[0].position.x));
-    for(i=1;i<tiles.size();i++){
-        int delta = abs(int(p.y-tiles[i].position.y))+abs(int(p.x-tiles[i].position.x));
-        if(minDelta > delta){
-            minDelta = delta;
-            min = tiles[i];
-        }
-    }
-    if(min.position.y > pos.y){
-        if(min.position.x == pos.x){
-            return 6;
-        }else if(min.position.x > pos.x){
-            return 5;
-        }else{
-            return 7;
-        }
-    }else if(min.position.y == pos.y){
-        if(min.position.x > pos.x)
-            return 0;
-        else
-            return 4;
-    }else{
-        if(min.position.x == pos.x){
-            return 2;
-        }else if(min.position.x > pos.x){
-            return 1;
-        }else{
-            return 3;
-        }
-    }
-}
 
 void Enemy::drawEnemy(sf::RenderWindow *f){
     f->draw(spr);
@@ -89,7 +52,7 @@ int Enemy::enColision(Map * mapa){
     case 5:
         if(mapa->getTileInGrid(grid, sf::Vector2u(x+1, y+1)).tipo!=1)
             return 1;
-        break;
+break;
     case 6:
         if(mapa->getTileInGrid(grid, sf::Vector2u(x, y+1)).tipo!=1)
             return 1;
@@ -164,17 +127,13 @@ int Enemy::elegirDir(int dir){
     }
 }
 
-void EnemyTipoA::Update(const float _Time, Player * jg, Map *mapa){
-    sf::Vector2u j;
-    j.x = jg->getPosInMap().x*2;
-    j.y = jg->getPosInMap().y*2;
+void Enemy::Update(const float _Time, Player * jg, Map *mapa){
     if(health>0){
         if(daniado>0.05) spr.setColor(sf::Color::White);
         else{
             spr.setColor(sf::Color::Red);
             daniado += _Time;
         }
-
         atqTime+=_Time;
         if(atqTime>0.3) atacar = true;
         anim->Update(_Time);
@@ -193,8 +152,8 @@ void EnemyTipoA::Update(const float _Time, Player * jg, Map *mapa){
                 daniado = 0;
                 if(state == 0)  state = 1;
                 if(health<=0){
-                    if(jg->getPlayerLife()<60 && rand()%2) jg->recibirVida(rand()%16+5);
-                    jg->puntaje+=30;
+                    if(jg->getPlayerLife()<50 && rand()%2) jg->recibirVida(rand()%16+5);
+                    jg->puntaje+=rand()%36+5;
                     state = -1;
                 }
                 if(jg->getWeaponT()!=4)
@@ -202,7 +161,13 @@ void EnemyTipoA::Update(const float _Time, Player * jg, Map *mapa){
             }
         }
     }
+}
 
+void EnemyTipoA::Update(const float _Time, Player * jg, Map *mapa){
+    sf::Vector2u j;
+    j.x = jg->getPosInMap().x*2;
+    j.y = jg->getPosInMap().y*2;
+    Enemy::Update(_Time, jg, mapa);
     switch(state){
         case -1:
             {
@@ -230,7 +195,6 @@ void EnemyTipoA::Update(const float _Time, Player * jg, Map *mapa){
             break;
             }
         case 1:
-        //dirrecion = getNextStep(mapa, posInMap, j);
             if(rand()%2){
                 if(posInMap.x == j.x){
                     if(posInMap.y > j.y){
@@ -309,15 +273,11 @@ void EnemyTipoA::Update(const float _Time, Player * jg, Map *mapa){
             }
             if(ms>=8){
                 state = 0;
-                anim->setFrameTime(0.5);/*
-                if(mapa->getObjectInMap(posInMap.y, posInMap.x) == 13)
-                    mapa->setObjectInMap(posInMap.y, posInMap.x, 0);*/
+                anim->setFrameTime(0.5);
                 int f = spr.getPosition().y/32;
                 int c = spr.getPosition().x/32;
                 posInMap.y = f;
                 posInMap.x = c;
-                //if(mapa->getObjectInMap(posInMap.y, posInMap.x) == 0)
-                  //  mapa->setObjectInMap(f, c, 13);
             }
             break;
     }
@@ -326,42 +286,7 @@ void EnemyTipoA::Update(const float _Time, Player * jg, Map *mapa){
 void EnemyTipoB::Update(const float _Time, Player * jg, Map *mapa){
     //1.07, 0.53
     sf::Vector2u j = jg->getPosInMap();
-    if(health>0){
-        if(daniado>0.05) spr.setColor(sf::Color::White);
-        else{
-            spr.setColor(sf::Color::Red);
-            daniado += _Time;
-        }
-
-        atqTime+=_Time;
-        if(atqTime>0.3) atacar = true;
-        anim->Update(_Time);
-        spr.setTextureRect(anim->tRect);
-
-        sf::FloatRect interseccion;
-        if(spr.getGlobalBounds().intersects(jg->getPayerSpr().getGlobalBounds(), interseccion) && atacar && (interseccion.width>=16 || interseccion.width>=16) && jg->getState()!=-1){
-            jg->recibirDmg(damage);
-            atacar = false;
-            atqTime = 0;
-        }
-        std::vector<Bullet>& balas = jg->getBalas();
-        for(unsigned int i=0;i<balas.size();i++){
-            if(balas[i].getSpr().getGlobalBounds().intersects(spr.getGlobalBounds()) && jg->getState()!=-1){
-                health-=jg->getDmg();
-                daniado = 0;
-                if(health<=0){
-                    if(jg->getPlayerLife()<80 && rand()%2) jg->recibirVida(rand()%9+2);
-                    jg->puntaje += 20;
-                    if(mapa->getObjectInMap(posInMap.y, posInMap.x) == 14)
-                        mapa->setObjectInMap(posInMap.y, posInMap.x, 0);
-                    state = -1;
-                }
-                if(jg->getWeaponT()!=4)
-                    balas.erase(balas.begin()+i);
-            }
-        }
-    }
-
+    Enemy::Update(_Time, jg, mapa);
     switch(state){
         case -1:
             {
@@ -407,7 +332,7 @@ void EnemyTipoB::Update(const float _Time, Player * jg, Map *mapa){
             ms = 0;
             break;
         case 2:
-            if(ms<=32){
+            if(ms<=32){ //32
                 move();
                 ms++;
             }
@@ -426,14 +351,14 @@ void EnemyTipoB::Update(const float _Time, Player * jg, Map *mapa){
     }
 }
 
-EnemyTipoA::EnemyTipoA(int f, int c, int _grid){ //13
+EnemyTipoA::EnemyTipoA(int f, int c){ //13
     state = tipo = atqTime = 0;
     visionDist = (rand()%6+5)*2;
     velocityMove = 4;
     damage = rand()%6+6;
     health = 50;
     daniado = 1;
-    grid = _grid;
+    grid = 32;
 
     e.loadFromFile("sprites/enemy.png");
     anim = new Animation(&e, 0, sf::Vector2u(4, 2), 0.5, 0);

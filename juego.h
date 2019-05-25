@@ -16,8 +16,7 @@ class Game{
         Player *jugador;
         GuiDialog* objInteract;
         std::vector<Chest> cofres;
-        std::vector<EnemyTipoA> enemigoA;
-        std::vector<EnemyTipoB> enemigoB;
+        std::vector<Enemy*> enemigos;
         Mouse *mira;
         sf::Vector2f camPos;
         sf::Vector2u antPosPlayer;
@@ -126,7 +125,7 @@ void Game::procesarLogica(){
     std::vector<int> walls;
     int tam = 12;
     sf::Vector2i j = (sf::Vector2i)jugador->getPosInMap();
-    Chest *cofre; EnemyTipoA *enemyA; EnemyTipoB *enemyB;
+    Chest *cofre;
     if(j.x-tam<0) j.x = tam;
     if(j.x+tam>mapa->getTam()) j.x = mapa->getTam()-tam;
     if(j.y-tam<0) j.y = tam;
@@ -149,12 +148,10 @@ void Game::procesarLogica(){
                     }
                 }else{
                     if(mapa->getObjectInMap(i, h)==14 && !mapa->getVisitadoMap(i , h)){
-                        enemyB = new EnemyTipoB(i, h);
-                        enemigoB.push_back(*enemyB);
+                        enemigos.push_back(new EnemyTipoB(i, h));
                     }
                     if(mapa->getObjectInMap(i, h)==13 && !mapa->getVisitadoMap(i , h)){
-                        enemyA = new EnemyTipoA(i, h, 32);
-                        enemigoA.push_back(*enemyA);
+                        enemigos.push_back(new EnemyTipoA(i, h));
                     }
                 }
             }
@@ -162,13 +159,9 @@ void Game::procesarLogica(){
         }
     }
 
-    for(i=0;i<enemigoA.size();i++){
-        if(enemigoA[i].tipo != -1) enemigoA[i].Update(Time, jugador, mapa);
-        else enemigoA.erase(enemigoA.begin()+i);
-    }
-    for(i=0;i<enemigoB.size();i++){
-        if(enemigoB[i].tipo != -1) enemigoB[i].Update(Time, jugador, mapa);
-        else enemigoB.erase(enemigoB.begin()+i);
+    for(i=0;i<enemigos.size();i++){
+        if(enemigos[i]->tipo != -1) enemigos[i]->Update(Time, jugador, mapa);
+        else enemigos.erase(enemigos.begin()+i);
     }
     jugador->playerUpdate(mapa, walls, Time);
     showDialogs();
@@ -493,11 +486,8 @@ int Game::getCantChestsSpawns(int f, int c){
 
 void Game::enemyDraw(){
     int i;
-    for(i=0;i<enemigoA.size();i++){
-        enemigoA[i].drawEnemy(window);
-    }
-    for(i=0;i<enemigoB.size();i++){
-        enemigoB[i].drawEnemy(window);
+    for(i=0;i<enemigos.size();i++){
+        enemigos[i]->drawEnemy(window);
     }
 }
 
@@ -557,14 +547,9 @@ void Game::puedeGanar(){
         sf::Vector2u distToExit = Global::diffTo(salida[i], j);
         if(distToExit.y <= 15 && distToExit.x <= 15){
             despejado = true;
-            for(n=0;n<enemigoA.size();n++){
-                sf::Vector2u diff = Global::diffTo(salida[i], enemigoA[n].getPosInMap());
-                if((diff.y <= 7 && diff.x <= 7) && enemigoA[n].getVida()>0)
-                    despejado = false;
-            }
-            for(n=0;n<enemigoB.size();n++){
-                sf::Vector2u diff = Global::diffTo(salida[i], enemigoB[n].getPosInMap());
-                if((diff.y <= 7 && diff.x <= 7) && enemigoB[n].getVida()>0)
+            for(n=0;n<enemigos.size();n++){
+                sf::Vector2u diff = Global::diffTo(salida[i], enemigos[n]->getPosInMap());
+                if((diff.y <= 7 && diff.x <= 7) && enemigos[n]->getVida()>0)
                     despejado = false;
             }
 
