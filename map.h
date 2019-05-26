@@ -24,6 +24,7 @@ private:
     void buildWalls();
     bool checkVecinos(int, int);
     void newMap(int ocupacion);
+    void newDungeon(int nPasadas);
     void simpleConnect(int nPasadas = 1);
     void exitSpawn();
     int cellsCount(int, int, int);
@@ -31,7 +32,6 @@ private:
     void drunkWalker(sf::Vector2u startPos, sf::Vector2u endPos, int tileType);
     void drunkWalker(sf::Vector2u startPos, int nMoves, int tileType);
 public:
-    Map(int, int);
     Map(int, int, int);
     Map(FILE*);
     ~Map();

@@ -110,7 +110,7 @@ sf::Vector2f Menu::getMousePos(){
 void Menu::mainMenu(){
     float Time;
     sf::Clock reloj;
-    bool fSave = checkArchivo("savedata.sk");
+    bool fSave = false; //checkArchivo("savedata.sk");
     bool fScores = checkArchivo("scores.sk");
     sf::Clock sReloj;
     float time=0;
@@ -144,7 +144,7 @@ void Menu::mainMenu(){
                 mbt[0].setColor('t', sf::Color::Red);
                 mbt[0].setTextSize(35);
                 if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && time>0.2){
-                    mainState = 2;
+                    //mainState = 2;
                 }
             }else{
                 mbt[0].setColor('t', sf::Color(169, 169, 169));

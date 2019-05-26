@@ -6,17 +6,18 @@
 class Game{
     private:
         unsigned int tamMap;
+        int8_t nivelActual;
         int seed, gameState;
         bool reanudarPartida;
         sf::RenderWindow *window;
         sf::View *camera;
         sf::Event event;
-        Map *mapa;
         Map *dungeon;
         Player *jugador;
         GuiDialog* objInteract;
         std::vector<Chest> cofres;
         std::vector<Enemy*> enemigos;
+        std::vector<Level*> niveles;
         Mouse *mira;
         sf::Vector2f camPos;
         sf::Vector2u antPosPlayer;
@@ -52,14 +53,10 @@ class Game{
         void gameLoop();
         void renderizar();
         void inDungeon();
-        void chestSpawn();
         void enemyDraw();
         void enemySpawn();
         void showDialogs();
         void actionObject(int);
-        int getCantChestsSpawns(int, int);
-        int getCantEnemySpawns(int, int);
-        void playerSpawn(Player *j1);
         void puedeGanar();
         void mostrarPuntaje();
         void guardarPartida();
@@ -82,7 +79,6 @@ Game::Game(sf::RenderWindow *vent){
 Game::~Game(){
     delete window;
     if(!gameState){
-        delete mapa;
         delete camera;
         delete jugador;
     }
@@ -95,10 +91,13 @@ void Game::iniciarJuego(){
     if(reanudarPartida){
         cargarPartida();
     }else{
-        mapa = new Map(tamMap, rand()%11 + 42);
-        //mapa = new Map(tamMap, 0, 3);
+        nivelActual = 0;                //mapa = new Map(tamMap, 0, 3);
+        niveles.push_back(new Level);
         jugador = new Player();
-        playerSpawn(jugador);
+        niveles[nivelActual]->newMap(tamMap, 0, rand()%11 + 42);
+        niveles[nivelActual]->spawnPlayer(jugador);
+        niveles[nivelActual]->spawnChests();
+        enemySpawn();
     }
     camera = new sf::View;
     objInteract = nullptr;
@@ -109,20 +108,13 @@ void Game::iniciarJuego(){
     antPosPlayer = jugador->getPosInMap();
     *camera = window->getDefaultView();
     //camera->zoom(8);
-
-    if(!reanudarPartida){
-        mapa->setWallsToDraw();
-        mapa->setCollisions();
-        mapa->spawnDoors();
-        enemySpawn();
-        chestSpawn();
-    }
     gameState = 1;
     //mapa->mapConsole();
 }
 
 void Game::procesarLogica(){
     std::vector<int> walls;
+    Map * mapa = niveles[nivelActual]->getMap();
     int tam = 12;
     sf::Vector2i j = (sf::Vector2i)jugador->getPosInMap();
     Chest *cofre;
@@ -192,6 +184,7 @@ void Game::procesarLogica(){
 }
 
 void Game::inDungeon(){
+    dungeon = niveles[nivelActual]->getMap();
     std::vector<int> walls;
     const int tam = 15;
     sf::Vector2i j = (sf::Vector2i)jugador->getPosInMap();
@@ -213,29 +206,30 @@ void Game::inDungeon(){
 }
 
 void Game::procesarTeclas(){
-        while(window->pollEvent(event)){
-            if(event.type == sf::Event::Closed)
-                window->close();
-            if(event.type == sf::Event::KeyReleased){
-                if(event.key.code == sf::Keyboard::Escape){
-                    if(gameState == 1){
-                        gameState = 0;
-                        window->setMouseCursorVisible(true);
-                    }else if(gameState == 0){
-                        gameState = 1;
-                        window->setMouseCursorVisible(false);
-                    }
-                }
-                if(event.key.code == sf::Keyboard::Return){
-                    sf::Vector2u pos = jugador->getPosInMap();
-                    std::cout<<pos.x<<" "<<pos.y<<" -> "<<mapa->getPosInMap(pos.y, pos.x)<<"\n";
-                    //if(dungeonState) dungeonState = false;
-                }
-                if(event.key.code == sf::Keyboard::E){
-                    actionObject(mapa->getObjectInMap(jugador->getPosInMap().y, jugador->getPosInMap().x));
+    Map * mapa = niveles[nivelActual]->getMap();
+    while(window->pollEvent(event)){
+        if(event.type == sf::Event::Closed)
+            window->close();
+        if(event.type == sf::Event::KeyReleased){
+            if(event.key.code == sf::Keyboard::Escape){
+                if(gameState == 1){
+                    gameState = 0;
+                    window->setMouseCursorVisible(true);
+                }else if(gameState == 0){
+                    gameState = 1;
+                    window->setMouseCursorVisible(false);
                 }
             }
+            if(event.key.code == sf::Keyboard::Return){
+                sf::Vector2u pos = jugador->getPosInMap();
+                std::cout<<pos.x<<" "<<pos.y<<" -> "<<mapa->getPosInMap(pos.y, pos.x)<<"\n";
+                //if(dungeonState) dungeonState = false;
+            }
+            if(event.key.code == sf::Keyboard::E){
+                actionObject(mapa->getObjectInMap(jugador->getPosInMap().y, jugador->getPosInMap().x));
+            }
         }
+    }
 }
 
 void Game::posicionarCamara(){
@@ -284,8 +278,10 @@ void Game::mostrarPuntaje(){
 }
 
 void Game::renderizar(){
-    window->clear();
+    Map * mapa = niveles[nivelActual]->getMap();
+
     window->setView(*camera);
+    window->clear(sf::Color::Black);
     if(dungeonState){
         dungeon->dibujarMapa(1, window, jugador->getPosInMap());
         jugador->drawPlayer(window, mira->getMousePos().y);
@@ -355,21 +351,8 @@ void Game::loadMenuPausa(){
     }
 }
 
-void Game::playerSpawn(Player *j1){
-    int points = mapa->getTam()/10;
-    sf::Vector2f spawnPos;
-    int f, c;
-    do{
-        f = rand()%10 + points/2*10;
-        c = rand()%10 + points/2*10;
-    }while(mapa->getPosInMap(f, c)!=casAct);
-    spawnPos.x = (c * 64) + 32;
-    spawnPos.y = (f * 64) + 32;
-    j1->setPosInMap(f, c);
-    j1->setPosition(spawnPos);
-}
-
 void Game::showDialogs(){
+    Map * mapa = niveles[nivelActual]->getMap();
     int offsetY = -32;
     int offsetX = 25;
     sf::Vector2u jg = jugador->getPosInMap();
@@ -393,18 +376,6 @@ void Game::showDialogs(){
             objInteract = nullptr;
         }
     }
-/*
-    bool copy = false;
-    sf::Vector2u jg = jugador->getPosInMap();
-    int obj = mapa->getObjectInMap(jg.y, jg.x);
-    for(int i=0;i<dialogs.size();i++){
-        if(dialogs[i].getPos() == sf::Vector2f(jg.x*64, jg.y*64-32))
-            copy = true;
-    }
-    if(obj>=4 && obj<=7 && !copy){
-        dialogs.push_back(GuiDialog("E", f, sf::Vector2f(jg.x*64, jg.y*64-32), sf::Color::Red));
-    }
-*/
 }
 
 void Game::updateInterfaz(){
@@ -458,32 +429,6 @@ void Game::loadInterfaz(){
     }
 }
 
-void Game::chestSpawn(){
-    int points = mapa->getTam()/10;
-    int j, i, h, f, c;
-    for(i=0;i<points;i++){
-        for(h=0;h<points;h++){
-            for(j=0;j<getCantChestsSpawns(i, h);j++){
-                do{
-                    f = rand()%10;
-                    c = rand()%10;
-                }while(mapa->getPosInMap(f+(10*i), c+(h*10))!=casAct && mapa->getObjectInMap(f+(10*i), c+(h*10))!=0);
-                mapa->setObjectInMap(f+(10*i), c+(h*10), 3);
-            }
-        }
-    }
-}
-
-int Game::getCantChestsSpawns(int f, int c){
-    int points = mapa->getTam()/10;
-    if((f==points/2 || f==points/2-1 || f==points/2+1) && (c==points/2-1 || c==points/2+1 || c==points/2))
-        return 1;
-    if(f==0 || f==points-1 || c==0 || c==points-1)
-        return 0;
-    else
-        return 2;
-}
-
 void Game::enemyDraw(){
     int i;
     for(i=0;i<enemigos.size();i++){
@@ -492,11 +437,12 @@ void Game::enemyDraw(){
 }
 
 void Game::enemySpawn(){
+    Map * mapa = niveles[nivelActual]->getMap();
     int points = mapa->getTam()/10;
     int i, h, f, c, j;
     for(i=0;i<points;i++){
         for(h=0;h<points;h++){
-            for(j=0;j<getCantEnemySpawns(i, h);j++){
+            for(j=0;j<Global::getCantEnemySpawns(i, h, tamMap);j++){
                 do{
                     f = rand()%10;
                     c = rand()%10;
@@ -510,22 +456,10 @@ void Game::enemySpawn(){
     }
 }
 
-int Game::getCantEnemySpawns(int f, int c){
-    int points = mapa->getTam()/10;
-    if(f==points/2 && c==points/2)
-        return 0;
-    if((f==points/2-1 || f==points/2+1) && (c==points/2-1 || c==points/2+1))
-        return 0;
-    if(f==0 || f==points-1 || c==0 || c==points-1)
-        return 3;
-    else
-        return 2;
-}
-
 void Game::guardarPartida(){
     FILE*p = fopen("savedata.sk", "wb");
     fwrite(&tamMap, sizeof(int), 1, p);
-    mapa->guardarEnDisco(p);
+    niveles[nivelActual]->getMap()->guardarEnDisco(p);
     jugador->guardarEnDisco(p);
     fclose(p);
 }
@@ -533,12 +467,13 @@ void Game::guardarPartida(){
 void Game::cargarPartida(){
     FILE*p = fopen("savedata.sk", "rb");
     fread(&tamMap, sizeof(int), 1, p);
-    mapa = new Map(p);
+//    mapa = new Map(p);
     jugador = new Player(p);
     fclose(p);
 }
 
 void Game::puedeGanar(){
+    Map * mapa = niveles[nivelActual]->getMap();
     std::vector<sf::Vector2u> salida = mapa->getSalida();
     sf::Vector2u j = jugador->getPosInMap();
     int i, n;
@@ -575,11 +510,12 @@ void Game::actionObject(int obj){
     if(obj >= 4 && obj <=7){
         jugador->dropToPlayer(cofres);
     }else if(obj == 8){
-        dungeon = new Map(40, 60, 3);
-        dungeon->setWallsToDraw();
-        dungeon->setCollisions();
+        niveles.push_back(new Level);
+        nivelActual++;
+        niveles[nivelActual]->newMap(40, 1, 3);
+        niveles[nivelActual]->spawnPlayer(jugador);
         dungeonState = true;
-        jugador->setPosition(sf::Vector2f(25*64, 25*64));
+        camera->zoom(1.5);
     }
 }
 #endif // JUEGO_H_INCLUDED

@@ -14,6 +14,7 @@
 #include "player.h"
 #include "enemy.h"
 #include "mouse.h"
+#include "level.h"
 #include "juego.h"
 #include "menu.h"
 

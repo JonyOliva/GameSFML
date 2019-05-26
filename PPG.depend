@@ -3766,7 +3766,7 @@
 	"animation.h"
 	"datagame.h"
 
-1558823143 d:\proyectos\sfmlproject\gamesfml\datagame.h
+1558910881 d:\proyectos\sfmlproject\gamesfml\datagame.h
 	<SFML/Graphics.hpp>
 	<math.h>
 
@@ -3792,11 +3792,11 @@
 	<SFML/Graphics.hpp>
 	"bullet.h"
 
-1558643667 d:\proyectos\sfmlproject\gamesfml\map.h
+1558912244 d:\proyectos\sfmlproject\gamesfml\map.h
 	<SFML/Graphics.hpp>
 	"dataType.h"
 
-1558643667 source:d:\proyectos\sfmlproject\gamesfml\main.cpp
+1558908546 source:d:\proyectos\sfmlproject\gamesfml\main.cpp
 	<iostream>
 	<SFML/Graphics.hpp>
 	<SFML/Window.hpp>
@@ -3813,6 +3813,7 @@
 	"player.h"
 	"enemy.h"
 	"mouse.h"
+	"level.h"
 	"juego.h"
 	"menu.h"
 
@@ -3998,18 +3999,18 @@
 1558643667 d:\proyectos\sfmlproject\gamesfml\mouse.h
 	"player.h"
 
-1558826659 d:\proyectos\sfmlproject\gamesfml\juego.h
+1558913241 d:\proyectos\sfmlproject\gamesfml\juego.h
 	"score.h"
 
 1558643667 d:\proyectos\sfmlproject\gamesfml\score.h
 
-1558643667 d:\proyectos\sfmlproject\gamesfml\menu.h
+1558911398 d:\proyectos\sfmlproject\gamesfml\menu.h
 	<SFML/Graphics.hpp>
 	<SFML/Network.hpp>
 	"button.h"
 	"score.h"
 
-1558643667 source:d:\proyectos\sfmlproject\gamesfml\map.cpp
+1558912718 source:d:\proyectos\sfmlproject\gamesfml\map.cpp
 	"map.h"
 	<iostream>
 
@@ -4027,6 +4028,16 @@
 	"weapon.h"
 	<iostream>
 
-1558823111 source:d:\proyectos\sfmlproject\gamesfml\datagame.cpp
+1558910821 source:d:\proyectos\sfmlproject\gamesfml\datagame.cpp
 	"datagame.h"
+
+1558912455 source:d:\proyectos\sfmlproject\gamesfml\level.cpp
+	"level.h"
+
+1558912136 d:\proyectos\sfmlproject\gamesfml\level.h
+	<vector>
+	"map.h"
+	"enemy.h"
+	"chest.h"
+	"player.h"
 

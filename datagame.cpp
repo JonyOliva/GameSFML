@@ -30,3 +30,25 @@ sf::Vector2f Global::aimDirNorm(sf::Vector2f Pos, sf::Vector2i target){
 
     return aimDirNorm;
 }
+
+int Global::getCantChestsSpawns(int f, int c, int tamMap){
+    int points = tamMap/10;
+    if((f==points/2 || f==points/2-1 || f==points/2+1) && (c==points/2-1 || c==points/2+1 || c==points/2))
+        return 1;
+    if(f==0 || f==points-1 || c==0 || c==points-1)
+        return 0;
+    else
+        return 2;
+}
+
+int Global::getCantEnemySpawns(int f, int c, int tamMap){
+    int points = tamMap/10;
+    if(f==points/2 && c==points/2)
+        return 0;
+    if((f==points/2-1 || f==points/2+1) && (c==points/2-1 || c==points/2+1))
+        return 0;
+    if(f==0 || f==points-1 || c==0 || c==points-1)
+        return 3;
+    else
+        return 2;
+}

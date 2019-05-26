@@ -5,55 +5,26 @@
 #define maxDoors 4
 #define tileSize 64
 
-Map::Map(int _tam, int porcentajeOcupado){
+Map::Map(int _tam, int typeMap, int data){
     tam = _tam;
     m = new Tile*[tam];
     for(int h=0;h<tam;h++){
         m[h] = new Tile[tam];
     }
     mapaEnCero();
-    newMap(porcentajeOcupado);
-    loadTextures();
-}
-
-Map::Map(int _tam, int mult, int nPasadas){
-    tam = _tam;
-    m = new Tile*[tam];
-    for(int h=0;h<tam;h++){
-        m[h] = new Tile[tam];
+    switch(typeMap){
+        case 0:
+            newMap(data);
+            setWallsToDraw();
+            setCollisions();
+            spawnDoors();
+            break;
+        case 1:
+            newDungeon(data);
+            setWallsToDraw();
+            setCollisions();
+            break;
     }
-    mapaEnCero();
-    int i, p;
-    int center = tam/2;
-    for(i=0;i<tam;i++){
-        for(p=0;p<tam;p++){
-            if(i == 0 || p == 0 || i == tam-1 || p == tam-1){
-                m[i][p].tipo = 0;
-                continue;
-            }
-            sf::Vector2u current(abs(center-i), abs(center-p));
-            float prob = 100 - ((current.x+current.y)*100/(tam-2));
-            if(rand()%100 < prob){
-                m[i][p].tipo = 1;
-            }
-        }
-    }
-    for(int f=0;f<nPasadas;f++){
-        for(i=1;i<tam-1;i++){
-            for(p=1;p<tam-1;p++){
-                if(m[i][p].tipo == 0){
-                    int cells = cellsCount(i, p, 1);
-                    if(cells > 4)
-                        m[i][p].tipo = 1;
-                }else{
-                    int cells = cellsCount(i, p, 0);
-                    if(cells > 4)
-                        m[i][p].tipo = 0;
-                }
-            }
-        }
-    }
-    buildWalls();
     loadTextures();
 }
 
@@ -277,6 +248,40 @@ void Map::newMap(int ocupacion){
     std::cout<<actualOcupado<<" : "<<ocupacion<<std::endl;
     exitSpawn();
     simpleConnect(2);
+    buildWalls();
+}
+
+void Map::newDungeon(int nPasadas){
+    int i, p;
+    int center = tam/2;
+    for(i=0;i<tam;i++){
+        for(p=0;p<tam;p++){
+            if(i == 0 || p == 0 || i == tam-1 || p == tam-1){
+                m[i][p].tipo = 0;
+                continue;
+            }
+            sf::Vector2u current(abs(center-i), abs(center-p));
+            float prob = 100 - ((current.x+current.y)*100/(tam-2));
+            if(rand()%100 < prob){
+                m[i][p].tipo = 1;
+            }
+        }
+    }
+    for(int f=0;f<nPasadas;f++){
+        for(i=1;i<tam-1;i++){
+            for(p=1;p<tam-1;p++){
+                if(m[i][p].tipo == 0){
+                    int cells = cellsCount(i, p, 1);
+                    if(cells > 4)
+                        m[i][p].tipo = 1;
+                }else{
+                    int cells = cellsCount(i, p, 0);
+                    if(cells > 4)
+                        m[i][p].tipo = 0;
+                }
+            }
+        }
+    }
     buildWalls();
 }
 
